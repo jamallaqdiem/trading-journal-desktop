@@ -161,48 +161,59 @@ export const DailyJournalView: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {entries.map((entry) => (
-            <div
-              key={entry.id}
-              className="p-5 rounded-xl bg-[#151921] border border-[#2A303F] space-y-3"
-            >
-              <div className="flex items-center justify-between border-b border-[#2A303F] pb-3">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono font-bold text-slate-300">
-                    {new Date(entry.date).toLocaleDateString()}
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      entry.market_bias === "Bullish"
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : entry.market_bias === "Bearish"
-                          ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                          : "bg-slate-500/10 text-slate-300 border border-slate-500/20"
-                    }`}
-                  >
-                    Bias: {entry.market_bias}
-                  </span>
-                </div>
+          {entries.map((entry) => {
+            const isBullish = entry.market_bias === "Bullish";
+            const isBearish = entry.market_bias === "Bearish";
 
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`w-3.5 h-3.5 ${
-                        star <= entry.psychology_rating
-                          ? "text-amber-400 fill-amber-400"
-                          : "text-slate-600"
+            return (
+              <div
+                key={entry.id}
+                className={`p-5 rounded-xl bg-[#151921] border border-[#2A303F] space-y-3 relative overflow-hidden transition-all hover:border-slate-700 ${
+                  isBullish
+                    ? "border-l-4 border-l-emerald-500"
+                    : isBearish
+                      ? "border-l-4 border-l-rose-500"
+                      : "border-l-4 border-l-slate-500"
+                }`}
+              >
+                <div className="flex items-center justify-between border-b border-[#2A303F] pb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-mono font-bold text-slate-300">
+                      {new Date(entry.date).toLocaleDateString()}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        isBullish
+                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          : isBearish
+                            ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                            : "bg-slate-500/10 text-slate-300 border border-slate-500/20"
                       }`}
-                    />
-                  ))}
-                </div>
-              </div>
+                    >
+                      Bias: {entry.market_bias}
+                    </span>
+                  </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed">
-                {entry.notes}
-              </p>
-            </div>
-          ))}
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-3.5 h-3.5 ${
+                          star <= entry.psychology_rating
+                            ? "text-amber-400 fill-amber-400"
+                            : "text-slate-600"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {entry.notes}
+                </p>
+              </div>
+            );
+          })}
         </div>
       )}
 

@@ -37,7 +37,6 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // Create a new trade entry
-// Create a new trade entry
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationResult = createTradeSchema.safeParse(req.body);
@@ -65,6 +64,8 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
       realized_pnl: validData.realized_pnl || null,
       commission: validData.commission,
       exit_reason: validData.exit_reason || null,
+      notes: validData.notes || null,
+      screenshot_path: validData.screenshot_path || null,
     });
 
     // Fetch the newly inserted record back to return it to the client
@@ -78,12 +79,12 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 // PATCH /api/trades/:id
-// PATCH /api/trades/:id
 router.patch(
   "/:id",
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    const { exit_reason, exit_type, exit_price } = req.body;
+    const { exit_reason, exit_type, exit_price, notes, screenshot_path } =
+      req.body;
 
     try {
       const numericId = Number(id);
@@ -94,6 +95,8 @@ router.patch(
           ...(exit_reason !== undefined && { exit_reason }),
           ...(exit_type !== undefined && { exit_type }),
           ...(exit_price !== undefined && { exit_price }),
+          ...(notes !== undefined && { notes }),
+          ...(screenshot_path !== undefined && { screenshot_path }),
           updated_at: new Date(),
         });
 

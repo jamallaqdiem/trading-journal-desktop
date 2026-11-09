@@ -1,8 +1,19 @@
 import React, { useState } from "react";
-import { X } from "lucide-react";
+import { X, Upload } from "lucide-react";
 import { tradesApi } from "../api/axiosClient";
 import { styles } from "../styles/classes";
 import type { TradeAction, ExitType } from "../types";
+
+// Extend Window interface for TypeScript so it recognizes electronAPI
+declare global {
+  interface Window {
+    electronAPI?: {
+      getTradeImagesDir: () => Promise<string>;
+      saveTradeScreenshot: (sourcePath: string) => Promise<string>;
+      openTradeScreenshot: () => Promise<string | null>;
+    };
+  }
+}
 
 interface AddTradeModalProps {
   isOpen: boolean;
@@ -25,12 +36,14 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
   const [holdingSeconds, setHoldingSeconds] = useState<string>("");
   const [realizedPnl, setRealizedPnl] = useState<string>("");
   const [exitReason, setExitReason] = useState<string>("");
+  const [notes, setNotes] = useState<string>("");
+  const [screenshotPath, setScreenshotPath] = useState<string>("");
+  const [screenshotFileName, setScreenshotFileName] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [commission, setCommission] = useState<string>("");
 
   if (!isOpen) return null;
 
-  // Function to reset all inputs back to empty/default state
   const handleResetAndClose = () => {
     setTicker("");
     setAction("BUY");
@@ -42,8 +55,29 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
     setHoldingSeconds("");
     setRealizedPnl("");
     setExitReason("");
+    setNotes("");
+    setScreenshotPath("");
+    setScreenshotFileName("");
     setCommission("");
     onClose();
+  };
+
+  // Handle screenshot selection via Electron native dialog
+  const handleSelectScreenshot = async () => {
+    try {
+      if (window.electronAPI?.openTradeScreenshot) {
+        const savedPath = await window.electronAPI.openTradeScreenshot();
+        if (savedPath) {
+          setScreenshotPath(savedPath);
+          const fileName = savedPath.split(/[/\\]/).pop() || "chart.png";
+          setScreenshotFileName(fileName);
+        }
+      } else {
+        alert("electronAPI.openTradeScreenshot is not defined!");
+      }
+    } catch (err) {
+      console.error("Failed to open screenshot dialog:", err);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,12 +85,12 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
     try {
       setSubmitting(true);
 
-      // Calculate total holding period in decimal minutes (Minutes + Seconds/60)
       const totalMinutes =
         holdingMinutes || holdingSeconds
           ? Number(holdingMinutes || 0) + Number(holdingSeconds || 0) / 60
           : null;
 
+      //  standard Axios API for saving trade
       await tradesApi.create({
         ticker: ticker.toUpperCase(),
         action,
@@ -69,9 +103,12 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
         holding_period_minutes: totalMinutes,
         realized_pnl: realizedPnl ? Number(realizedPnl) : null,
         commission: commission ? Number(commission) : null,
+        notes: notes || null,
+        screenshot_path: screenshotPath || null,
       });
+
       onSuccess();
-      handleResetAndClose(); // Clears form and closes modal on success
+      handleResetAndClose();
     } catch (err) {
       console.error("Failed to create trade:", err);
       alert("Error creating trade.");
@@ -81,8 +118,8 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-[#151921] border border-[#2A303F] rounded-xl w-full max-w-lg p-6 relative shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className="bg-[#151921] border border-[#2A303F] rounded-xl w-full max-w-lg p-6 relative shadow-2xl my-8">
         <button
           type="button"
           onClick={handleResetAndClose}
@@ -185,39 +222,65 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
             </div>
             <div>
               <label className="text-xs text-slate-400 block mb-1">
-                Entry/Exit Reason / Notes
+                Exit Reason
               </label>
-              <textarea
+              <input
+                type="text"
+                placeholder="e.g. Resistance hit"
                 value={exitReason}
                 onChange={(e) => setExitReason(e.target.value)}
-                placeholder="e.g. Breakout resistance"
-                rows={2}
-                className={styles.input + " resize-none min-h-[36px] w-full"}
+                className={styles.input}
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* --- Psychology & Trade Notes --- */}
+          <div>
+            <label className="text-xs text-slate-400 block mb-1">
+              Trade Notes & Psychology
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="How did you feel? What was the setup context?"
+              rows={2}
+              className={styles.input + " resize-none w-full"}
+            />
+          </div>
+
+          {/* ---Screenshot Upload --- */}
+          <div>
+            <label className="text-xs text-slate-400 block mb-1">
+              Chart Screenshot (Optional)
+            </label>
+            <button
+              type="button"
+              onClick={handleSelectScreenshot}
+              className="w-full flex items-center justify-center gap-2 border border-dashed border-[#2A303F] hover:border-indigo-500 rounded-lg p-3 cursor-pointer bg-[#0B0E14] text-slate-300 transition-colors"
+            >
+              {screenshotFileName ? (
+                <Upload className="w-4 h-4 text-emerald-400" />
+              ) : (
+                <Upload className="w-4 h-4 text-indigo-400" />
+              )}
+              <span className="text-xs truncate">
+                {screenshotFileName
+                  ? screenshotFileName
+                  : "Click to attach chart image"}
+              </span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-slate-400 block mb-1">
-                Holding (Mins & Secs)
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  placeholder="Mins"
-                  value={holdingMinutes}
-                  onChange={(e) => setHoldingMinutes(e.target.value)}
-                  className={styles.input}
-                />
-                <input
-                  type="number"
-                  placeholder="Secs"
-                  value={holdingSeconds}
-                  onChange={(e) => setHoldingSeconds(e.target.value)}
-                  className={styles.input}
-                />
-              </div>
+              <label className="text-xs text-slate-400 block mb-1">Mins</label>
+              <input
+                type="number"
+                placeholder="Mins"
+                value={holdingMinutes}
+                onChange={(e) => setHoldingMinutes(e.target.value)}
+                className={styles.input}
+              />
             </div>
             <div>
               <label className="text-xs text-slate-400 block mb-1">
@@ -226,7 +289,7 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
               <input
                 type="number"
                 step="0.01"
-                placeholder="e.g. 150.00"
+                placeholder="150.00"
                 value={realizedPnl}
                 onChange={(e) => setRealizedPnl(e.target.value)}
                 className={styles.input}
@@ -234,12 +297,12 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
             </div>
             <div>
               <label className="text-xs text-slate-400 block mb-1">
-                Commission ($)
+                Comm ($)
               </label>
               <input
                 type="number"
                 step="0.01"
-                placeholder="e.g. 1.00"
+                placeholder="1.00"
                 value={commission}
                 onChange={(e) => setCommission(e.target.value)}
                 className={styles.input}

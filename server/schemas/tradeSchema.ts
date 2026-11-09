@@ -19,6 +19,8 @@ export const createTradeSchema = z.object({
     .nonnegative("Commission cannot be negative")
     .default(0),
   exit_reason: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  screenshot_path: z.string().optional().nullable(),
 });
 
 export type CreateTradeInput = z.infer<typeof createTradeSchema>;
