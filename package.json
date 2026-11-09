@@ -19,6 +19,7 @@
     "appId": "com.tradingjournal.desktop",
     "productName": "Trading Journal",
     "nodeGypRebuild": false,
+    "npmRebuild": false,
     "directories": {
       "output": "release"
     },
