@@ -11,23 +11,30 @@ let mainWindow: BrowserWindow | null = null;
 // Create Window
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    title: "Trading Journal Pro",
+    width: 1440,
+    height: 900,
+    minWidth: 1024,
+    minHeight: 700,
+    title: "Trading Analytics Platform",
+    autoHideMenuBar: true,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
     },
   });
 
+  // Maximize window on open
+  mainWindow.maximize();
+
   const isDev = process.env.NODE_ENV === "development";
 
   if (isDev) {
-    mainWindow.loadURL("http://localhost:5173");
+    // Vite dev server URL
+    const PORT = process.env.VITE_PORT || 5173;
+    mainWindow.loadURL(`http://localhost:${PORT}`);
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "../client/dist/index.html"));
   }
 }
 
