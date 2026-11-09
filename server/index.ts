@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import dotenv from "dotenv";
+import net from "net";
 
 try {
   // @ts-ignore
@@ -26,7 +27,7 @@ export async function startLocalServer() {
   await runMigrations();
 
   const app = express();
-  const PORT = process.env.PORT || 5000;
+  const desiredPort = Number(process.env.PORT) || 5000;
 
   app.use(
     cors({
@@ -36,15 +37,37 @@ export async function startLocalServer() {
   );
   app.use(express.json());
 
-  // Mount your existing routes
+  // Mount routes
   app.use("/api/trades", tradesRouter);
   app.use("/api/journal", journalRouter);
   app.use("/api/news", newsRouter);
   app.use(errorHandler);
 
-  app.listen(PORT, () => {
-    console.log(`[Local Express Server]: Running on http://localhost:${PORT}`);
-  });
+  // Helper function to listen with automatic fallback if port is busy
+  const listenOnPort = (port: number) => {
+    const server = app.listen(port, "127.0.0.1", () => {
+      const actualPort = (server.address() as net.AddressInfo).port;
+      console.log(
+        `[Local Express Server]: Running on http://localhost:${actualPort}`,
+      );
+
+      process.env.PORT = actualPort.toString();
+    });
+
+    server.on("error", (err: any) => {
+      if (err.code === "EADDRINUSE") {
+        console.warn(
+          `[Local Express Server]: Port ${port} is busy, trying an auto-allocated port...`,
+        );
+        // Pass 0 to let the operating system assign an available random free port
+        listenOnPort(0);
+      } else {
+        console.error("[Local Express Server]: Failed to start server:", err);
+      }
+    });
+  };
+
+  listenOnPort(desiredPort);
 }
 
 startLocalServer();

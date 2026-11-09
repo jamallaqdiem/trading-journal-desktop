@@ -14,6 +14,8 @@ export interface Trade {
   holding_period_minutes?: number | null;
   realized_pnl?: number | null;
   commission?: number | null;
+  notes?: string | null;
+  screenshot_path?: string | null;
   type?: "LONG" | "SHORT";
   exit_type?: ExitType | null;
   exchange: string | "SMART";
@@ -31,6 +33,8 @@ export interface NewTradePayload {
   realized_pnl?: number | null;
   exit_type?: ExitType | null;
   commission?: number | null;
+  notes?: string | null;
+  screenshot_path?: string | null;
 }
 
 export interface MarketNews {

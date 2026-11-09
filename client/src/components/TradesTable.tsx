@@ -7,9 +7,13 @@ import {
   Sliders,
   Timer,
   Calendar,
+  Image as ImageIcon,
+  FileText,
 } from "lucide-react";
 import type { Trade, ExitType } from "../types";
 import { styles } from "../styles/classes";
+import { ChartLightbox } from "./ChartLightBox";
+import { NotesModal } from "./NotesModal";
 
 interface TradesTableProps {
   trades: Trade[];
@@ -108,6 +112,13 @@ export const TradesTable: React.FC<TradesTableProps> = ({
   const [dateFilter, setDateFilter] = useState<DateFilterType>("TODAY");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
+  // Modal active states
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedNotes, setSelectedNotes] = useState<{
+    ticker: string;
+    text: string;
+  } | null>(null);
+
   const filteredTrades = useMemo(() => {
     const now = new Date();
     const startOfToday = new Date(
@@ -159,7 +170,7 @@ export const TradesTable: React.FC<TradesTableProps> = ({
   if (loading) {
     return (
       <div className="text-center py-12 text-slate-400">
-        Loading trades from PostgreSQL...
+        Loading trades from SQLite...
       </div>
     );
   }
@@ -241,6 +252,8 @@ export const TradesTable: React.FC<TradesTableProps> = ({
                 <th className={styles.tableHeader}>Holding Time</th>
                 <th className={styles.tableHeader}>Exchange</th>
                 <th className={styles.tableHeader}>Realized PnL</th>
+                <th className={styles.tableHeader}>Chart</th>
+                <th className={styles.tableHeader}>Notes</th>
                 <th className={styles.tableHeader}>Commission</th>
               </tr>
             </thead>
@@ -304,7 +317,8 @@ export const TradesTable: React.FC<TradesTableProps> = ({
                     <td className={styles.tableCell}>
                       {renderExitBadge(t.exit_type, isClosed)}
                     </td>
-                    {/* Custom Exit Reason Text area Column */}
+
+                    {/* Exit Reason Textarea */}
                     <td className={styles.tableCell}>
                       <textarea
                         defaultValue={t.exit_reason || ""}
@@ -313,7 +327,6 @@ export const TradesTable: React.FC<TradesTableProps> = ({
                         className="bg-[#0b0e14] border border-[#2A303F] text-slate-200 text-xs rounded px-2 py-1 w-36 focus:outline-none focus:border-emerald-500 resize-none whitespace-pre-wrap break-words min-h-[36px]"
                         onBlur={async (e) => {
                           const newReason = e.target.value;
-                          // check if there is any change in the text before sending a PATCH
                           if (newReason === t.exit_reason) return;
                           onUpdateTrade(t.id, { exit_reason: newReason });
                         }}
@@ -347,7 +360,47 @@ export const TradesTable: React.FC<TradesTableProps> = ({
                         </span>
                       )}
                     </td>
-                    {/* Commissions*/}
+
+                    {/* Chart Screenshot Button */}
+                    <td className={styles.tableCell}>
+                      {t.screenshot_path ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedImage(t.screenshot_path || null)
+                          }
+                          className="inline-flex items-center justify-center p-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg cursor-pointer transition-colors border border-indigo-500/20"
+                          title="View Chart Screenshot"
+                        >
+                          <ImageIcon className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <span className="text-slate-600">-</span>
+                      )}
+                    </td>
+
+                    {/* Trade Notes Button */}
+                    <td className={styles.tableCell}>
+                      {t.notes ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedNotes({
+                              ticker: t.ticker,
+                              text: t.notes || "",
+                            })
+                          }
+                          className="inline-flex items-center justify-center p-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg cursor-pointer transition-colors border border-amber-500/20"
+                          title="View Notes & Psychology"
+                        >
+                          <FileText className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <span className="text-slate-600">-</span>
+                      )}
+                    </td>
+
+                    {/* Commissions */}
                     <td
                       className={`${styles.tableCell} font-mono text-slate-300`}
                     >
@@ -362,6 +415,21 @@ export const TradesTable: React.FC<TradesTableProps> = ({
           </table>
         </div>
       )}
+
+      {/*  Chart Lightbox Component */}
+      <ChartLightbox
+        isOpen={Boolean(selectedImage)}
+        imagePath={selectedImage}
+        onClose={() => setSelectedImage(null)}
+      />
+
+      {/* Trade Notes Reader Modal */}
+      <NotesModal
+        isOpen={Boolean(selectedNotes)}
+        ticker={selectedNotes?.ticker || ""}
+        notes={selectedNotes?.text || null}
+        onClose={() => setSelectedNotes(null)}
+      />
     </div>
   );
 };

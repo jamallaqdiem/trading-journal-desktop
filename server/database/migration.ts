@@ -23,6 +23,8 @@ export async function runMigrations() {
       table.string("exchange", 50).nullable();
       table.string("exit_reason", 500).nullable();
       table.string("exit_type", 20).defaultTo("MANUAL");
+      table.text("notes").nullable();
+      table.string("screenshot_path", 500).nullable();
       table.timestamps(true, true);
     });
 

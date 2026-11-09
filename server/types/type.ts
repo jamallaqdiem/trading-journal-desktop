@@ -13,6 +13,8 @@ export interface Trade {
   realized_pnl?: number | null;
   commission?: number;
   exit_reason?: string | null;
+  notes?: string | null;
+  screenshot_path?: string | null;
   created_at?: Date;
   updated_at?: Date;
 }
