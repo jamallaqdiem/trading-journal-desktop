@@ -2,24 +2,25 @@
   "name": "trading-journal-desktop",
   "version": "2.0.0",
   "description": "Desktop Trading Journal & Analytics Engine",
-  "main": "electron/main.ts",
+  "main": "dist-electron/main.js",
   "type": "module",
   "scripts": {
     "dev:react": "vite",
     "dev:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .",
     "dev": "concurrently \"npm run dev:react\" \"npm run dev:electron\"",
     "build:react": "vite build",
-    "build": "npm run build:react",
+    "build:electron": "esbuild electron/main.ts --platform=node --target=node20 --bundle --outdir=dist-electron --format=esm",
+    "build": "npm run build:react && npm run build:electron",
     "dist:linux": "npm run build && electron-builder --linux",
     "dist": "npm run build && electron-builder",
     "start": "electron .",
     "server": "npx tsx server/index.ts"
   },
-"build": {
+  "build": {
     "appId": "com.tradingjournal.desktop",
     "productName": "Trading Journal",
     "nodeGypRebuild": false,
-    "npmRebuild": true, 
+    "npmRebuild": true,
     "directories": {
       "output": "release"
     },
@@ -39,7 +40,7 @@
     "sqlite3": "^6.0.1",
     "zod": "^4.6.7"
   },
-"devDependencies": {
+  "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
