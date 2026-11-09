@@ -10,6 +10,7 @@ import { AddTradeModal } from "./components/AddTradeModal";
 import { MarketNewsView } from "./components/MarketNewsView";
 import { DailyJournalView } from "./components/DailyJournalView";
 import { OverviewAnalyticsView } from "./components/OverviewAnalyticsView";
+import { TradesActionsBar } from "./components/TradesActionsBar";
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>("overview");
@@ -79,6 +80,7 @@ export const App: React.FC = () => {
           {activeTab === "trades" && (
             <>
               <StatCards trades={trades} />
+              <TradesActionsBar trades={trades} onRefresh={fetchTrades} />
               <TradesFilter
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
