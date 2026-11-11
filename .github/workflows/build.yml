@@ -20,9 +20,12 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install  --legacy-peer-deps
+        run: npm install --legacy-peer-deps
 
-      - name: Build AppImage
+      - name: Build React and Electron Main
+        run: npm run build
+
+      - name: Build Linux AppImage
         run: npx electron-builder --linux --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
