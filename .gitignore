@@ -151,3 +151,8 @@ vite.config.ts.timestamp-*
 *.db
 db.sqlite
 .venv
+node_modules/
+dist/
+dist-electron/
+release/
+.env

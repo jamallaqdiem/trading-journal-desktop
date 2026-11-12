@@ -46,7 +46,10 @@ export async function startLocalServer() {
   // Helper function to listen with automatic fallback if port is busy
   const listenOnPort = (port: number) => {
     const server = app.listen(port, "127.0.0.1", () => {
-      const actualPort = (server.address() as net.AddressInfo).port;
+      const address = server.address();
+      const actualPort =
+        address && typeof address === "object" ? address.port : port;
+
       console.log(
         `[Local Express Server]: Running on http://localhost:${actualPort}`,
       );
@@ -59,7 +62,6 @@ export async function startLocalServer() {
         console.warn(
           `[Local Express Server]: Port ${port} is busy, trying an auto-allocated port...`,
         );
-        // Pass 0 to let the operating system assign an available random free port
         listenOnPort(0);
       } else {
         console.error("[Local Express Server]: Failed to start server:", err);
@@ -69,5 +71,3 @@ export async function startLocalServer() {
 
   listenOnPort(desiredPort);
 }
-
-startLocalServer();
