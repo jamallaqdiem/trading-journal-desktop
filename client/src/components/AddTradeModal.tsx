@@ -271,25 +271,38 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="text-xs text-slate-400 block mb-1">Mins</label>
-              <input
-                type="number"
-                placeholder="Mins"
-                value={holdingMinutes}
-                onChange={(e) => setHoldingMinutes(e.target.value)}
-                className={styles.input}
-              />
+          <div className="grid grid-cols-2 gap-3">
+            {/* Make Holding span the full width (col-span-2) */}
+            <div className="col-span-2">
+              <label className="text-xs text-slate-400 block mb-1">
+                Holding (Mins & Secs)
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="number"
+                  placeholder="Mins"
+                  value={holdingMinutes}
+                  onChange={(e) => setHoldingMinutes(e.target.value)}
+                  className={styles.input}
+                />
+                <input
+                  type="number"
+                  placeholder="Secs"
+                  value={holdingSeconds}
+                  onChange={(e) => setHoldingSeconds(e.target.value)}
+                  className={styles.input}
+                />
+              </div>
             </div>
-            <div>
+
+            {/* Realized PnL can move to its own row or share as needed */}
+            <div className="col-span-2">
               <label className="text-xs text-slate-400 block mb-1">
                 Realized PnL ($)
               </label>
               <input
                 type="number"
-                step="0.01"
-                placeholder="150.00"
+                placeholder="0.00"
                 value={realizedPnl}
                 onChange={(e) => setRealizedPnl(e.target.value)}
                 className={styles.input}
