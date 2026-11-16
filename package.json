@@ -1,6 +1,10 @@
 {
   "name": "trading-journal-desktop",
   "version": "2.0.0",
+  "author": {
+    "name": "Jamal Laqdiem",
+    "email": "your-email@example.com"
+  },
   "description": "Desktop Trading Journal & Analytics Engine",
   "main": "dist-electron/main.js",
   "type": "module",
