@@ -20,7 +20,7 @@
     "productName": "Trading Journal",
     "directories": {
       "output": "release"
-    },
+    
    },
     "win": {
       "target": [
