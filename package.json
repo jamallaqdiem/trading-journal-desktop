@@ -21,10 +21,22 @@
     "directories": {
       "output": "release"
     },
+   },
     "win": {
       "target": [
         "nsis",
         "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "deb"
+      ],
+      "category": "Utility"
+    },
+    "mac": {
+      "target": [
+        "dmg"
       ]
     },
     "files": [
