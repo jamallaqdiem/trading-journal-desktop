@@ -36,6 +36,9 @@
       "target": [
         "deb"
       ],
+      "executableArgs": [
+        "--no-sandbox"
+      ],
       "category": "Utility"
     },
     "mac": {
